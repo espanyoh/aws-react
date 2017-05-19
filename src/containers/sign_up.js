@@ -5,7 +5,8 @@ import {Config, CognitoIdentityCredentials} from "aws-sdk";
 import {
   CognitoUserPool,
   CognitoUserAttribute,
-  CognitoUser
+  CognitoUser,
+  AuthenticationDetails
 } from "amazon-cognito-identity-js";
 import appConfig from "../config";
 
@@ -31,6 +32,8 @@ class SignUp extends Component {
 
         this.onVerifyCodeChange = this.onVerifyCodeChange.bind(this);
         this.onVerifyFormSubmit = this.onVerifyFormSubmit.bind(this);
+
+        this.onSignInFormSubmit = this.onSignInFormSubmit.bind(this);
     }
   render() {
     return (
@@ -78,6 +81,28 @@ class SignUp extends Component {
                             onBlur={ this.onVerifyCodeChange }
                             />
                             <Button type="submit" bsStyle="primary" >Verify</Button>
+                        </form>
+                    </Panel>  
+                </Col>
+            </Row>
+            <Row className="show-grid">
+                <Col xs={6} xsOffset={3}>
+                    <Panel header="Sign In">
+                        <form onSubmit={this.onSignInFormSubmit}>
+                            <FieldGroup
+                            id="formControlsText"
+                            type="text"
+                            label="Username"
+                            placeholder="Enter Username"
+                            onBlur={ this.onUsernameChange }
+                            />
+                            <FieldGroup
+                            id="formControlsPassword"
+                            label="Password"
+                            type="password"
+                            onBlur={ this.onPasswordChange }
+                            />
+                            <Button type="submit" bsStyle="primary" >Sign In</Button>
                         </form>
                     </Panel>  
                 </Col>
@@ -147,6 +172,48 @@ class SignUp extends Component {
             console.log('call result: ' + result);
         });        
 
+    }
+    onSignInFormSubmit(event){
+        event.preventDefault();
+        console.log('---You have clicked Sign In \n'+this.state.username+'\n'+this.state.password);
+        const password = this.state.password.trim();
+        const username = this.state.username.trim();
+
+        var authenticationData = {
+            Username : username,
+            Password : password,
+        };
+        var authenticationDetails = new AuthenticationDetails(authenticationData);
+        
+        var userData = {
+            Username : username,
+            Pool : userPool
+        };
+        var cognitoUser = new CognitoUser(userData);
+        cognitoUser.authenticateUser(authenticationDetails, {
+            onSuccess: function (result) {
+                console.log('result + ' + result);
+                console.log('token + ' + result.getAccessToken());
+                console.log('jwt access token + ' + result.getAccessToken().getJwtToken());
+
+                // AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+                //     IdentityPoolId : '...', // your identity pool id here
+                //     Logins : {
+                //         // Change the key below according to the specific region your user pool is in.
+                //         'cognito-idp.<region>.amazonaws.com/<YOUR_USER_POOL_ID>' : result.getIdToken().getJwtToken()
+                //     }
+                // });
+
+                // Instantiate aws sdk service objects now that the credentials have been updated.
+                // example: var s3 = new AWS.S3();
+
+            },
+
+            onFailure: function(err) {
+                alert(err);
+            },
+
+        });
     }
   
 }
