@@ -1,3 +1,234 @@
+## 1.) Create boilerplate (included hot reload)
+```
+create-react-app aws-react
+```
+
+## 2.)Install aws package
+```
+npm install --save-dev webpack json-loader
+npm install --save amazon-cognito-identity-js
+```
+
+##  3.)Bootstrap
+### 3.1) Add Bootstrap
+```
+npm install --save react-bootstrap
+```
+
+### 3.2) Included CSS
+```
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+```
+
+### 3.3) A lot of components to ref
+[https://react-bootstrap.github.io/]
+
+
+## 4.)Sign Up
+```
+### 4.1) Add configuration
+--- Need to create *user pool* in Cognito First, then user value from that to configure
+```
+export default {
+  region: 'us-east-1',
+  IdentityPoolId: 'us-east-1_bbAxPdC2q',
+  UserPoolId: 'us-east-1_bbAxPdC2q',
+  ClientId: '1dc38aoco3ujrf03ldr2rops7p',
+}
+
+```
+### 4.2) Add code for sign up
+```javascript
+    onSignUpFormSubmit(event) {
+        event.preventDefault();
+        console.log('---You have clicked signUp\n'+this.state.username+'\n'+this.state.email+'\n'+this.state.password);
+        const email = this.state.email.trim();
+        const password = this.state.password.trim();
+        const username = this.state.username.trim();
+        const attributeList = [
+        new CognitoUserAttribute({
+            Name: 'email',
+            Value: email,
+            })
+        ];
+        userPool.signUp(username, password, attributeList, null, (err, result) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        console.log('user name is ' + result.user.getUsername());
+        console.log('call result: ' + result);
+        });
+
+        this.setState({});
+    }
+```
+## 5.) Verify
+```javascript
+import {
+  CognitoUserPool,
+  CognitoUserAttribute,
+  CognitoUser
+} from "amazon-cognito-identity-js";
+```
+
+```javascript
+    onVerifyFormSubmit(event){
+        event.preventDefault();
+        const verifyCode = this.state.verifyCode.trim();
+        const username = this.state.username.trim();
+        console.log('---You have clicked Verify \n-------\n'+username+'\n'+verifyCode+'\n--------');
+
+        var userData = {
+            Username : username,
+            Pool : userPool
+        };
+
+        var cognitoUser = new CognitoUser(userData);
+        cognitoUser.confirmRegistration(verifyCode, true, function(err, result) {
+            if (err) {
+                alert(err);
+                return;
+            }
+            console.log('call result: ' + result);
+        });   
+    }
+```
+
+## 6.) Sign-in
+```javascript
+import {
+  CognitoUserPool,
+  CognitoUserAttribute,
+  CognitoUser,
+  AuthenticationDetails
+} from "amazon-cognito-identity-js";
+```
+```javascript
+    onSignInFormSubmit(event){
+        event.preventDefault();
+        console.log('---You have clicked Sign In \n'+this.state.username+'\n'+this.state.password);
+        const password = this.state.password.trim();
+        const username = this.state.username.trim();
+
+        var authenticationData = {
+            Username : username,
+            Password : password,
+        };
+        var authenticationDetails = new AuthenticationDetails(authenticationData);
+        
+        var userData = {
+            Username : username,
+            Pool : userPool
+        };
+        var cognitoUser = new CognitoUser(userData);
+        cognitoUser.authenticateUser(authenticationDetails, {
+            onSuccess: function (result) {
+                console.log('result + ' + result);
+                console.log('token + ' + result.getAccessToken());
+                console.log('jwt access token + ' + result.getAccessToken().getJwtToken());
+            },
+
+            onFailure: function(err) {
+                alert(err);
+            },
+
+        });
+    }
+```
+
+
+## 7.) API Gateway
+~~[https://www.npmjs.com/package/aws-sdk]~~
+```
+~~npm install aws-sdk~~
+```
+
+```
+~~var AWS = require('aws-sdk/dist/aws-sdk-react-native');~~
+```
+
+[https://www.npmjs.com/package/aws-api-gateway-client]
+```
+npm install aws-api-gateway-client
+```
+
+```
+    onCallAPI(event){
+         event.preventDefault();
+         var jwt = this.state.jwt ;
+         console.log('jwt:', jwt);
+         var config = {invokeUrl:'https://hlvsp24b8e.execute-api.us-east-1.amazonaws.com/dev/users/create'};
+         var apigClient = apigClientFactory.newClient(config);
+
+        var params = { };       // URL params    
+        var pathTemplate = '';  // Identify service
+        var method = 'GET';
+        var additionalParams = {
+            headers: {
+                authorization: jwt ,
+                'Access-Control-Allow-Origin' : 'Origin, X-Requested-With, Content-Type, Accept'
+            }
+        };
+        var body = { };
+
+        apigClient.invokeApi(params, pathTemplate, method, additionalParams, body )
+        .then(function(result){
+            //This is where you would put a success callback
+            console.log(result.data.message);
+        }).catch( function(result){
+            //This is where you would put an error callback
+        });
+    }
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 
 Below you will find some information on how to perform common tasks.<br>
