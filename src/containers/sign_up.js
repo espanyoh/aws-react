@@ -10,6 +10,9 @@ import {
 } from "amazon-cognito-identity-js";
 import appConfig from "../config";
 
+var apigClientFactory = require('aws-api-gateway-client').default;
+
+
 Config.region = appConfig.region;
 Config.credentials = new CognitoIdentityCredentials({
   IdentityPoolId: appConfig.IdentityPoolId
@@ -34,6 +37,8 @@ class SignUp extends Component {
         this.onVerifyFormSubmit = this.onVerifyFormSubmit.bind(this);
 
         this.onSignInFormSubmit = this.onSignInFormSubmit.bind(this);
+
+        this.onCallAPI = this.onCallAPI.bind(this);
     }
   render() {
     return (
@@ -107,6 +112,16 @@ class SignUp extends Component {
                     </Panel>  
                 </Col>
             </Row>
+            <Row className="show-grid">
+                <Col xs={6} xsOffset={3}>
+                    <Panel header="Test Call API">
+                        <form onSubmit={this.onCallAPI}>
+                           
+                            <Button type="submit" bsStyle="primary" >Call API</Button>
+                        </form>
+                    </Panel>  
+                </Col>
+            </Row>
         </Grid>        
       </div>
     );
@@ -175,6 +190,7 @@ class SignUp extends Component {
     }
     onSignInFormSubmit(event){
         event.preventDefault();
+        var self = this;
         console.log('---You have clicked Sign In \n'+this.state.username+'\n'+this.state.password);
         const password = this.state.password.trim();
         const username = this.state.username.trim();
@@ -192,9 +208,11 @@ class SignUp extends Component {
         var cognitoUser = new CognitoUser(userData);
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess: function (result) {
-                console.log('result + ' + result);
-                console.log('token + ' + result.getAccessToken());
-                console.log('jwt access token + ' + result.getAccessToken().getJwtToken());
+                console.log('result + ' , result);
+                console.log('token + ' , result.getAccessToken());
+                console.log('jwt access token + ' + result.getIdToken().getJwtToken());
+                self.setState( {jwt:result.getIdToken().getJwtToken()});
+                //this.setState( {username : event.target.value} );
 
                 // AWS.config.credentials = new AWS.CognitoIdentityCredentials({
                 //     IdentityPoolId : '...', // your identity pool id here
@@ -213,6 +231,34 @@ class SignUp extends Component {
                 alert(err);
             },
 
+        });
+    }
+    onCallAPI(event){
+         event.preventDefault();
+         var jwt = this.state.jwt || 'eyJraWQiOiJDOUpsVGZueEZsXC9jSnZBYTNKeXIzS1NUdkdsQWhybEdwZDlnMDRXSGpBQT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI3YmI5MjI5Yy1kOWI4LTQ0MDktYjgzZC1kMTE2ZGU3Njc2ZjEiLCJhdWQiOiIxZGMzOGFvY28zdWpyZjAzbGRyMnJvcHM3cCIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJ0b2tlbl91c2UiOiJpZCIsImF1dGhfdGltZSI6MTQ5NTI0ODk1OSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLnVzLWVhc3QtMS5hbWF6b25hd3MuY29tXC91cy1lYXN0LTFfYmJBeFBkQzJxIiwiY29nbml0bzp1c2VybmFtZSI6InVzZXJuYW1ldGVzdDIiLCJleHAiOjE0OTUyNTI1NTksImlhdCI6MTQ5NTI0ODk1OSwiZW1haWwiOiJob3R5b2hAaG90bWFpbC5jb20ifQ.tqtsS5ODgxtefYa_g5HpLZDwzY5Ea8dJgshsKGYksNS-o8kzy_P6nRy--mtfRk81iSaAVKjf9UJND_VwKXrAxhmYgW0UNmdrFi7KjESwuHPmiXhxynrJIr6nmLneECvqTV5COafkV656kVLdXDd_lyaJXyc2xNHYNXLFUyucitJUTSedTOONPZd61erHPeRtC40ng2A7fcgXUbD6lMOJU8v00xdZUM7smU3gEJ6ZoB2MXjqY4gu_VlI0FRJKTaWoCLdAynH2NElZoanvhtOG82946INJgcSHI0HZBFGT5_lnhLpbfCmK0qBVbDhe-XUO0sTNSCi1Emmz5bulzZYbwA';
+         console.log('jwt:', jwt);
+         var config = {invokeUrl:'https://hlvsp24b8e.execute-api.us-east-1.amazonaws.com/dev/users/create'};
+         var apigClient = apigClientFactory.newClient(config);
+
+        console.log(apigClient);
+
+        var params = { };       // URL params    
+        var pathTemplate = '';  // Identify service
+        var method = 'GET';
+        var additionalParams = {
+            headers: {
+                authorization: jwt ,
+                'Access-Control-Allow-Origin' : 'Origin, X-Requested-With, Content-Type, Accept'
+            }
+        };
+        var body = { };
+
+        apigClient.invokeApi(params, pathTemplate, method, additionalParams, body )
+        .then(function(result){
+            //This is where you would put a success callback
+            console.log(result.data.message);
+        }).catch( function(result){
+            //This is where you would put an error callback
         });
     }
   
