@@ -208,11 +208,9 @@ class SignUp extends Component {
         var cognitoUser = new CognitoUser(userData);
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess: function (result) {
-                console.log('result + ' , result);
                 console.log('token + ' , result.getAccessToken());
                 console.log('jwt access token + ' + result.getIdToken().getJwtToken());
                 self.setState( {jwt:result.getIdToken().getJwtToken()});
-                //this.setState( {username : event.target.value} );
 
                 // AWS.config.credentials = new AWS.CognitoIdentityCredentials({
                 //     IdentityPoolId : '...', // your identity pool id here
