@@ -1,26 +1,21 @@
 import React, { Component} from 'react';
-import FacebookProvider, { Login } from 'react-facebook';
+import FacebookLogin from 'react-facebook-login';
+
+const responseFacebook = (response) => {
+  console.log('[responseFacebook]response:',response);
+};
 
 export default class FBLogin extends Component {
-  handleResponse = (data) => {
-    console.log(data);
-  }
-
-  handleError = (error) => {
-    this.setState({ error });
-  }
 
   render() {
     return (
-      <FacebookProvider appId="207309706437908">
-        <Login
-          scope="email"
-          onResponse={this.handleResponse}
-          onError={this.handleError}
-        >
-          <span>Login via Facebook</span>
-        </Login>
-      </FacebookProvider>
+      <FacebookLogin
+        appId="207309706437908"
+        autoLoad={false}
+        fields="name,email,picture"
+        callback={responseFacebook} 
+          icon="fa-facebook"/>
     );
   }
 }
+
