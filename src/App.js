@@ -3,7 +3,8 @@ import logo from './logo.svg';
 import './App.css';
 
 //import SignUp from './containers/sign_up';
-import FBLogin from './containers/fb_login';
+//import FBLogin from './containers/fb_login';
+import GGLogin from './containers/google_login';
 
 class App extends Component {
 
@@ -16,7 +17,7 @@ class App extends Component {
           <h2> AWS Showcase</h2>
         </div>
         <div>
-          <FBLogin />
+          <GGLogin />
         </div>
       </div>
     );
